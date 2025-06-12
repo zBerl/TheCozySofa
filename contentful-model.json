@@ -1,0 +1,135 @@
+{
+  "contentTypes": [
+    {
+      "sys": {
+        "id": "blogPost",
+        "name": "Blog Post"
+      },
+      "displayField": "title",
+      "fields": [
+        {
+          "id": "title",
+          "name": "Title",
+          "type": "Symbol",
+          "required": true
+        },
+        {
+          "id": "slug",
+          "name": "Slug",
+          "type": "Symbol",
+          "required": true,
+          "validations": [
+            {
+              "unique": true
+            }
+          ]
+        },
+        {
+          "id": "content",
+          "name": "Content",
+          "type": "RichText",
+          "required": true
+        },
+        {
+          "id": "featuredImage",
+          "name": "Featured Image",
+          "type": "Link",
+          "required": true,
+          "linkType": "Asset"
+        },
+        {
+          "id": "excerpt",
+          "name": "Excerpt",
+          "type": "Symbol",
+          "required": true
+        },
+        {
+          "id": "publishDate",
+          "name": "Publish Date",
+          "type": "Date",
+          "required": true
+        }
+      ]
+    },
+    {
+      "sys": {
+        "id": "product",
+        "name": "Product"
+      },
+      "displayField": "name",
+      "fields": [
+        {
+          "id": "name",
+          "name": "Name",
+          "type": "Symbol",
+          "required": true
+        },
+        {
+          "id": "slug",
+          "name": "Slug",
+          "type": "Symbol",
+          "required": true,
+          "validations": [
+            {
+              "unique": true
+            }
+          ]
+        },
+        {
+          "id": "description",
+          "name": "Description",
+          "type": "RichText",
+          "required": true
+        },
+        {
+          "id": "price",
+          "name": "Price",
+          "type": "Number",
+          "required": true
+        },
+        {
+          "id": "amazonLink",
+          "name": "Amazon Link",
+          "type": "Symbol",
+          "required": true
+        },
+        {
+          "id": "image",
+          "name": "Image",
+          "type": "Link",
+          "required": true,
+          "linkType": "Asset"
+        },
+        {
+          "id": "rating",
+          "name": "Rating",
+          "type": "Number",
+          "required": true,
+          "validations": [
+            {
+              "range": {
+                "min": 0,
+                "max": 5
+              }
+            }
+          ]
+        },
+        {
+          "id": "reviewCount",
+          "name": "Review Count",
+          "type": "Integer",
+          "required": true
+        },
+        {
+          "id": "featured",
+          "name": "Featured",
+          "type": "Boolean",
+          "required": false,
+          "defaultValue": {
+            "en-US": false
+          }
+        }
+      ]
+    }
+  ]
+} 
