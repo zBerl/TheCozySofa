@@ -43,8 +43,15 @@ Welcome to The Cozy Sofa, your go-to destination for comfortable and stylish hom
 
 3. **Vercel Deployment**:
    - Add the same environment variables in your Vercel project settings
-   - Make sure all variables are available in all environments (Production, Preview, and Development)
-   - Do not set any `target=development` restrictions
+   - Important: All sensitive variables (tokens and IDs) must be available in all environments
+   - Do not set any `target=development` restrictions for sensitive variables
+   - Required variables:
+     ```
+     CONTENTFUL_SPACE_ID=your_space_id
+     CONTENTFUL_ACCESS_TOKEN=your_delivery_token
+     CONTENTFUL_PREVIEW_TOKEN=your_preview_token
+     CONTENTFUL_ENVIRONMENT=Production
+     ```
 
 ## Getting Started
 
@@ -75,7 +82,10 @@ This project is set up for deployment on Vercel. Follow these steps to deploy:
 
 1. Push your code to a private repository on GitHub or GitLab.
 2. Connect your repository to Vercel and deploy.
-3. Set up environment variables in Vercel project settings.
+3. Set up environment variables in Vercel project settings:
+   - Add all required variables
+   - Make sure sensitive variables are available in all environments
+   - Do not set any `target=development` restrictions
 
 ## License
 
