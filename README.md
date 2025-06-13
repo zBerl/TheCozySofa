@@ -38,7 +38,7 @@ Welcome to The Cozy Sofa, your go-to destination for comfortable and stylish hom
      CONTENTFUL_SPACE_ID=your_space_id
      CONTENTFUL_ACCESS_TOKEN=your_delivery_token
      CONTENTFUL_PREVIEW_TOKEN=your_preview_token
-     CONTENTFUL_ENVIRONMENT=Production
+     CONTENTFUL_ENVIRONMENT=master  # Use 'master' for development
      ```
 
 3. **Vercel Deployment**:
@@ -50,8 +50,12 @@ Welcome to The Cozy Sofa, your go-to destination for comfortable and stylish hom
      CONTENTFUL_SPACE_ID=your_space_id
      CONTENTFUL_ACCESS_TOKEN=your_delivery_token
      CONTENTFUL_PREVIEW_TOKEN=your_preview_token
-     CONTENTFUL_ENVIRONMENT=Production
+     CONTENTFUL_ENVIRONMENT=Production  # Must be 'Production' for production builds
      ```
+   - Safety measures:
+     - The code includes checks to prevent using non-Production environments in production builds
+     - Development environments should use `master` or your dev environment
+     - Production deployments must use the `Production` environment
 
 ## Getting Started
 
@@ -85,7 +89,8 @@ This project is set up for deployment on Vercel. Follow these steps to deploy:
 3. Set up environment variables in Vercel project settings:
    - Add all required variables
    - Make sure sensitive variables are available in all environments
-   - Do not set any `target=development` restrictions
+   - Set `CONTENTFUL_ENVIRONMENT=Production` for production deployments
+   - The code will prevent accidental use of non-Production environments in production
 
 ## License
 

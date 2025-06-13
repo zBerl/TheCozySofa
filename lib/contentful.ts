@@ -7,6 +7,12 @@ const spaceId = process.env.CONTENTFUL_SPACE_ID;
 const accessToken = process.env.CONTENTFUL_ACCESS_TOKEN;
 const previewToken = process.env.CONTENTFUL_PREVIEW_TOKEN;
 const environment = process.env.CONTENTFUL_ENVIRONMENT || 'Production';
+const nodeEnv = process.env.NODE_ENV;
+
+// Safety check for production
+if (nodeEnv === 'production' && environment !== 'Production') {
+  throw new Error('Cannot use non-Production environment in production build');
+}
 
 if (!spaceId || !accessToken || !previewToken) {
   throw new Error('Missing Contentful environment variables');
