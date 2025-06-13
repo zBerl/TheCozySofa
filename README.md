@@ -18,6 +18,33 @@ Welcome to The Cozy Sofa, your go-to destination for comfortable and stylish hom
 - **Tailwind CSS**: A utility-first CSS framework for styling.
 - **Vercel Analytics**: For tracking site analytics.
 - **Google Analytics**: For detailed user behavior insights.
+- **Contentful**: For content management.
+
+## Environment Setup
+
+1. **Contentful Setup**:
+
+   - Create a space in Contentful
+   - Create a Production environment
+   - Get your Space ID and API keys:
+     - Content Delivery API token
+     - Content Preview API token
+
+2. **Local Development**:
+
+   - Copy `.env.example` to `.env.local`
+   - Fill in your Contentful credentials:
+     ```
+     CONTENTFUL_SPACE_ID=your_space_id
+     CONTENTFUL_ACCESS_TOKEN=your_delivery_token
+     CONTENTFUL_PREVIEW_TOKEN=your_preview_token
+     CONTENTFUL_ENVIRONMENT=Production
+     ```
+
+3. **Vercel Deployment**:
+   - Add the same environment variables in your Vercel project settings
+   - Make sure all variables are available in all environments (Production, Preview, and Development)
+   - Do not set any `target=development` restrictions
 
 ## Getting Started
 
@@ -48,6 +75,7 @@ This project is set up for deployment on Vercel. Follow these steps to deploy:
 
 1. Push your code to a private repository on GitHub or GitLab.
 2. Connect your repository to Vercel and deploy.
+3. Set up environment variables in Vercel project settings.
 
 ## License
 

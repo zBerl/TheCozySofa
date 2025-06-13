@@ -1,54 +1,70 @@
 import { createClient } from 'contentful';
 import { Document } from '@contentful/rich-text-types';
-import type { Entry } from 'contentful';
+import type { Entry, EntrySkeletonType, EntrySys } from 'contentful';
 
 // Check environment variables
 const spaceId = process.env.CONTENTFUL_SPACE_ID;
 const accessToken = process.env.CONTENTFUL_ACCESS_TOKEN;
+const previewToken = process.env.CONTENTFUL_PREVIEW_TOKEN;
+const environment = process.env.CONTENTFUL_ENVIRONMENT || 'Production';
 
-if (!spaceId || !accessToken) {
+if (!spaceId || !accessToken || !previewToken) {
   throw new Error('Missing Contentful environment variables');
 }
 
-// Create Contentful client
+// Create Contentful clients
 const client = createClient({
   space: spaceId,
   accessToken: accessToken,
+  environment: environment,
 });
 
-export interface ProductFields {
-  title: string;
-  imgProduct: {
-    fields: {
-      file: {
-        url: string;
+const previewClient = createClient({
+  space: spaceId,
+  accessToken: previewToken,
+  environment: environment,
+  host: 'preview.contentful.com',
+});
+
+export interface ProductFields extends EntrySkeletonType {
+  contentTypeId: 'product';
+  fields: {
+    title: string;
+    imgProduct: {
+      fields: {
+        file: {
+          url: string;
+        };
       };
     };
+    productText: string;
+    affiliateLink: Document;
   };
-  productText: string;
-  affiliateLink: Document;
 }
 
-export interface BlogPostFields {
-  title: string;
-  slug: string;
-  content: Document;
-  excerpt: string;
-  coverImage: {
-    fields: {
-      file: {
-        url: string;
+export interface BlogPostFields extends EntrySkeletonType {
+  contentTypeId: 'blogPost';
+  fields: {
+    title: string;
+    slug: string;
+    content: Document;
+    excerpt: string;
+    coverImage: {
+      fields: {
+        file: {
+          url: string;
+        };
       };
     };
+    date: string;
+    author: string;
   };
-  date: string;
-  author: string;
 }
 
 export type BlogPost = Entry<BlogPostFields>;
 export type Product = Entry<ProductFields>;
 
-export async function getBlogPosts() {
+export async function getBlogPosts(): Promise<BlogPost[]> {
   console.log('📚 [Contentful] Fetching blog posts...');
   console.log('🔑 [Contentful] Environment check:', {
     spaceId: process.env.CONTENTFUL_SPACE_ID,
@@ -79,7 +95,7 @@ export async function getBlogPosts() {
   }
 }
 
-export async function getBlogPost(id: string) {
+export async function getBlogPost(id: string): Promise<BlogPost | null> {
   console.log('📚 [Contentful] Fetching blog post:', id);
   try {
     const response = await client.getEntry<BlogPostFields>(id);
@@ -117,12 +133,7 @@ export async function getProducts(): Promise<Product[]> {
       })),
     });
 
-    return response.items.map(item => ({
-      sys: {
-        id: item.sys.id,
-      },
-      fields: item.fields,
-    }));
+    return response.items;
   } catch (error) {
     console.error('❌ [Contentful] Error fetching products:', error);
     return [];
@@ -142,44 +153,10 @@ export async function getProduct(id: string): Promise<Product | null> {
   }
 
   try {
-    // First try to get the entry directly
     const response = await client.getEntry<ProductFields>(id);
-    
-    if (!response || !response.fields) {
-      console.error('No product found with ID:', id);
-      return null;
-    }
-
-    // Return the product directly
-    return {
-      sys: {
-        id: response.sys.id,
-      },
-      fields: response.fields,
-    };
+    return response;
   } catch (error) {
-    // If direct entry fetch fails, try to find it in the entries list
-    try {
-      const entries = await client.getEntries<ProductFields>({
-        content_type: 'product',
-        'sys.id': id,
-      });
-
-      if (entries.items.length === 0) {
-        console.error('No product found with ID:', id);
-        return null;
-      }
-
-      const product = entries.items[0];
-      return {
-        sys: {
-          id: product.sys.id,
-        },
-        fields: product.fields,
-      };
-    } catch (fallbackError) {
-      console.error('Error fetching product:', error);
-      return null;
-    }
+    console.error('Error fetching product:', error);
+    return null;
   }
 } 
