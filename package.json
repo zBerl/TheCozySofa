@@ -11,11 +11,15 @@
     "create-sample-content": "node scripts/create-sample-content.js"
   },
   "dependencies": {
+    "@contentful/rich-text-html-renderer": "^17.0.0",
+    "@contentful/rich-text-react-renderer": "^16.0.1",
+    "@contentful/rich-text-types": "^17.0.0",
     "@heroicons/react": "^2.1.1",
     "@vercel/analytics": "^1.5.0",
     "autoprefixer": "^10.4.17",
     "contentful": "^10.6.21",
     "contentful-management": "^11.5.0",
+    "date-fns": "^4.1.0",
     "dotenv": "^16.4.5",
     "next": "^14.1.0",
     "postcss": "^8.4.35",

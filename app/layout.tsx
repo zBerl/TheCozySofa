@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Script from 'next/script'
 import Logo from '../components/Logo'
 import { Analytics } from '@vercel/analytics/react'
+import Navigation from './components/Navigation'
 
 const inter = Inter({ subsets: ['latin'] })
 const playfair = Playfair_Display({ subsets: ['latin'] })
@@ -66,55 +67,38 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const isProduction = process.env.NODE_ENV === 'production';
+
   return (
     <html lang="en">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <Script
-          async
-          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_ID}`}
-          strategy="afterInteractive"
-          crossOrigin="anonymous"
-        />
-        <Script
-          async
-          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}`}
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', '${process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}');
-          `}
-        </Script>
+        {isProduction && (
+          <>
+            <Script
+              async
+              src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_ID}`}
+              strategy="afterInteractive"
+              crossOrigin="anonymous"
+            />
+            <Script
+              async
+              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}');
+              `}
+            </Script>
+          </>
+        )}
       </head>
       <body className={inter.className}>
-        <header className="bg-white shadow-sm" role="banner">
-          <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between" role="navigation" aria-label="Main navigation">
-            <Link href="/" className="flex items-center">
-              <Logo variant="header" />
-            </Link>
-            <div className="flex items-center space-x-8">
-              <Link href="/products" className="text-gray-600 hover:text-gray-900">
-                Products
-              </Link>
-              <Link href="/blog" className="text-gray-600 hover:text-gray-900">
-                Blog
-              </Link>
-              <Link href="/about" className="text-gray-600 hover:text-gray-900">
-                About
-              </Link>
-              <Link href="/contact" className="text-gray-600 hover:text-gray-900">
-                Contact
-              </Link>
-              <Link href="/faq" className="text-gray-600 hover:text-gray-900">
-                FAQ
-              </Link>
-            </div>
-          </nav>
-        </header>
+        <Navigation />
         <main className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 ${playfair.className}`} role="main">
           {children}
         </main>
@@ -186,7 +170,7 @@ export default function RootLayout({
             </div>
           </div>
         </footer>
-        <Analytics />
+        {isProduction && <Analytics />}
       </body>
     </html>
   )

@@ -1,166 +1,185 @@
-import { createClient, Entry, EntryCollection, EntrySkeletonType } from 'contentful';
+import { createClient } from 'contentful';
+import { Document } from '@contentful/rich-text-types';
+import type { Entry } from 'contentful';
 
-export interface BlogPost {
-  title: string;
-  slug: string;
-  content: any;
-  featuredImage: {
-    fields: {
-      file: {
-        url: string;
-      };
-    };
-  };
-  excerpt: string;
-  publishDate: string;
+// Check environment variables
+const spaceId = process.env.CONTENTFUL_SPACE_ID;
+const accessToken = process.env.CONTENTFUL_ACCESS_TOKEN;
+
+if (!spaceId || !accessToken) {
+  throw new Error('Missing Contentful environment variables');
 }
 
-export interface Product {
-  name: string;
-  slug: string;
-  description: string;
-  price: number;
-  amazonLink: string;
-  image: {
-    fields: {
-      file: {
-        url: string;
-      };
-    };
-  };
-  rating: number;
-  reviewCount: number;
-}
-
-interface BlogPostFields extends EntrySkeletonType {
-  fields: {
-    title: string;
-    slug: string;
-    content: any;
-    featuredImage: {
-      fields: {
-        file: {
-          url: string;
-        };
-      };
-    };
-    excerpt: string;
-    publishDate: string;
-  };
-  contentTypeId: 'blogPost';
-}
-
-interface ProductFields extends EntrySkeletonType {
-  fields: {
-    name: string;
-    slug: string;
-    description: string;
-    price: number;
-    amazonLink: string;
-    image: {
-      fields: {
-        file: {
-          url: string;
-        };
-      };
-    };
-    rating: number;
-    reviewCount: number;
-    featured?: boolean;
-  };
-  contentTypeId: 'product';
-}
-
-if (!process.env.CONTENTFUL_SPACE_ID) {
-  throw new Error('CONTENTFUL_SPACE_ID is not defined');
-}
-
-if (!process.env.CONTENTFUL_ACCESS_TOKEN) {
-  throw new Error('CONTENTFUL_ACCESS_TOKEN is not defined');
-}
-
+// Create Contentful client
 const client = createClient({
-  space: process.env.CONTENTFUL_SPACE_ID,
-  accessToken: process.env.CONTENTFUL_ACCESS_TOKEN,
-  environment: process.env.CONTENTFUL_ENVIRONMENT || 'master',
+  space: spaceId,
+  accessToken: accessToken,
 });
 
-export async function getBlogPosts(): Promise<BlogPost[]> {
-  const response = await client.getEntries<BlogPostFields>({
-    content_type: 'blogPost',
-  });
-
-  return response.items
-    .sort((a, b) => new Date(b.fields.publishDate).getTime() - new Date(a.fields.publishDate).getTime())
-    .map((item) => ({
-      title: item.fields.title,
-      slug: item.fields.slug,
-      content: item.fields.content,
-      featuredImage: item.fields.featuredImage,
-      excerpt: item.fields.excerpt,
-      publishDate: item.fields.publishDate,
-    }));
+export interface ProductFields {
+  title: string;
+  imgProduct: {
+    fields: {
+      file: {
+        url: string;
+      };
+    };
+  };
+  productText: string;
+  affiliateLink: Document;
 }
 
-export async function getBlogPost(slug: string): Promise<BlogPost | null> {
-  const response = await client.getEntries<BlogPostFields>({
-    content_type: 'blogPost',
-    query: slug,
+export interface BlogPostFields {
+  title: string;
+  slug: string;
+  content: Document;
+  excerpt: string;
+  coverImage: {
+    fields: {
+      file: {
+        url: string;
+      };
+    };
+  };
+  date: string;
+  author: string;
+}
+
+export type BlogPost = Entry<BlogPostFields>;
+export type Product = Entry<ProductFields>;
+
+export async function getBlogPosts() {
+  console.log('📚 [Contentful] Fetching blog posts...');
+  console.log('🔑 [Contentful] Environment check:', {
+    spaceId: process.env.CONTENTFUL_SPACE_ID,
+    hasAccessToken: !!process.env.CONTENTFUL_ACCESS_TOKEN,
   });
 
-  if (response.items.length === 0) {
+  try {
+    const response = await client.getEntries<BlogPostFields>({
+      content_type: 'blogPost',
+    });
+
+    console.log('✅ [Contentful] Blog posts response:', {
+      total: response.total,
+      items: response.items.map(item => ({
+        id: item.sys.id,
+        product: item.fields.title,
+        hasImages: !!item.fields.coverImage,
+        imageUrl: item.fields.coverImage?.fields?.file?.url,
+        mainText: item.fields.title,
+        hasProductLink: !!item.fields.slug,
+      })),
+    });
+
+    return response.items;
+  } catch (error) {
+    console.error('❌ [Contentful] Error fetching blog posts:', error);
+    throw error;
+  }
+}
+
+export async function getBlogPost(id: string) {
+  console.log('📚 [Contentful] Fetching blog post:', id);
+  try {
+    const response = await client.getEntry<BlogPostFields>(id);
+    return response;
+  } catch (error) {
+    console.error('❌ [Contentful] Error fetching blog post:', error);
+    throw error;
+  }
+}
+
+export async function getProducts(): Promise<Product[]> {
+  console.log('🛍️ [Contentful] Fetching products...');
+  console.log('🔑 [Contentful] Environment check:', {
+    spaceId: process.env.CONTENTFUL_SPACE_ID,
+    hasAccessToken: !!process.env.CONTENTFUL_ACCESS_TOKEN,
+  });
+
+  try {
+    const response = await client.getEntries<ProductFields>({
+      content_type: 'product',
+      order: '-sys.createdAt',
+    });
+
+    console.log('✅ [Contentful] Products response:', {
+      total: response.total,
+      items: response.items.map(item => ({
+        id: item.sys.id,
+        title: item.fields.title,
+        hasImage: !!item.fields.imgProduct,
+        imageUrl: item.fields.imgProduct?.fields?.file?.url,
+        hasProductText: !!item.fields.productText,
+        productTextContent: item.fields.productText,
+        hasAffiliateLink: !!item.fields.affiliateLink,
+        affiliateLinkContent: item.fields.affiliateLink,
+      })),
+    });
+
+    return response.items.map(item => ({
+      sys: {
+        id: item.sys.id,
+      },
+      fields: item.fields,
+    }));
+  } catch (error) {
+    console.error('❌ [Contentful] Error fetching products:', error);
+    return [];
+  }
+}
+
+export async function getProduct(id: string): Promise<Product | null> {
+  console.log('🛍️ [Contentful] Fetching product:', id);
+  console.log('🔑 [Contentful] Environment check:', {
+    spaceId: process.env.CONTENTFUL_SPACE_ID,
+    hasAccessToken: !!process.env.CONTENTFUL_ACCESS_TOKEN,
+  });
+
+  if (!id || typeof id !== 'string') {
+    console.error('Invalid product ID:', id);
     return null;
   }
 
-  const item = response.items[0];
-  return {
-    title: item.fields.title,
-    slug: item.fields.slug,
-    content: item.fields.content,
-    featuredImage: item.fields.featuredImage,
-    excerpt: item.fields.excerpt,
-    publishDate: item.fields.publishDate,
-  };
-}
+  try {
+    // First try to get the entry directly
+    const response = await client.getEntry<ProductFields>(id);
+    
+    if (!response || !response.fields) {
+      console.error('No product found with ID:', id);
+      return null;
+    }
 
-export async function getFeaturedProducts(): Promise<Product[]> {
-  const response = await client.getEntries<ProductFields>({
-    content_type: 'product',
-  });
+    // Return the product directly
+    return {
+      sys: {
+        id: response.sys.id,
+      },
+      fields: response.fields,
+    };
+  } catch (error) {
+    // If direct entry fetch fails, try to find it in the entries list
+    try {
+      const entries = await client.getEntries<ProductFields>({
+        content_type: 'product',
+        'sys.id': id,
+      });
 
-  return response.items
-    .filter(item => item.fields.featured)
-    .map((item) => ({
-      name: item.fields.name,
-      slug: item.fields.slug,
-      description: item.fields.description,
-      price: item.fields.price,
-      amazonLink: item.fields.amazonLink,
-      image: item.fields.image,
-      rating: item.fields.rating,
-      reviewCount: item.fields.reviewCount,
-    }));
-}
+      if (entries.items.length === 0) {
+        console.error('No product found with ID:', id);
+        return null;
+      }
 
-export async function getProduct(slug: string): Promise<Product | null> {
-  const response = await client.getEntries<ProductFields>({
-    content_type: 'product',
-    query: slug,
-  });
-
-  if (response.items.length === 0) {
-    return null;
+      const product = entries.items[0];
+      return {
+        sys: {
+          id: product.sys.id,
+        },
+        fields: product.fields,
+      };
+    } catch (fallbackError) {
+      console.error('Error fetching product:', error);
+      return null;
+    }
   }
-
-  const item = response.items[0];
-  return {
-    name: item.fields.name,
-    slug: item.fields.slug,
-    description: item.fields.description,
-    price: item.fields.price,
-    amazonLink: item.fields.amazonLink,
-    image: item.fields.image,
-    rating: item.fields.rating,
-    reviewCount: item.fields.reviewCount,
-  };
 } 
